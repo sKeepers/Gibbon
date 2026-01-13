@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gibbon-web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./uploads:/var/www/html/uploads
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=gibbon
+      - MYSQL_USER=gibbon
+      - MYSQL_PASSWORD=gibbon123
+    networks:
+      - gibbon-network
+
+  db:
+    image: mysql:8.0
+    container_name: gibbon-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: gibbon
+      MYSQL_USER: gibbon
+      MYSQL_PASSWORD: gibbon123
+    ports:
+      - "3306:3306"
+    volumes:
+      - gibbon-db-data:/var/lib/mysql
+    networks:
+      - gibbon-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: gibbon-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    depends_on:
+      - db
+    networks:
+      - gibbon-network
+
+networks:
+  gibbon-network:
+    driver: bridge
+
+volumes:
+  gibbon-db-data:
